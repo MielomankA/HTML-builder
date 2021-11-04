@@ -2,12 +2,14 @@ const fs = require('fs');
 const path = require('path');
 
 const file = path.join(__dirname, 'text.txt');
-// console.log('111', file);
+const stream = new fs.ReadStream(file, 'utf-8');
 
-fs.readFile(file, 'utf-8', (err, data) => {
-  if (err) {
-    console.error(err);
-    return;
-  }
-  console.log(data);
+stream.on('readable', function () {
+  const data = stream.read();
+
+  if (data) console.log(data);
+});
+
+stream.on('end', function () {
+  console.log('THE END');
 });
