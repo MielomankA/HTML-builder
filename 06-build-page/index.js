@@ -1,10 +1,14 @@
 const fs = require('fs');
 const path = require('path');
+const fsPromises = require('fs/promises');
 
 const projectDist = path.join(__dirname, 'project-dist');
 const templatePath = path.join(__dirname, 'template.html');
 const componentsPath = path.join(__dirname, 'components');
 const indexHTMLPath = path.join(projectDist, 'index.html');
+const folderStyles = path.join(__dirname, 'styles');
+const assetsSrc = path.join(__dirname, 'assets');
+const assetsTerm = path.join(projectDist, 'assets');
 
 const createDir = async (pathDir) => {
   return new Promise((resolve) => {
@@ -59,6 +63,38 @@ const createFile = async (dirPath, data) => {
   });
 };
 
+const bundleStyles = path.join(projectDist, 'style.css');
+
+const getStylesFile = async (pathDir) => {
+  return new Promise((resolve) => {
+    fs.readdir(
+      pathDir,
+      {
+        withFileTypes: true,
+      },
+      (err, files) => {
+        if (err) throw err;
+
+        files.forEach((file) => {
+          if (path.extname(file.name) === '.css' && !file.isDirectory()) {
+            const streamRead = fs.createReadStream(
+              path.join(pathDir, file.name),
+              'utf8'
+            );
+            streamRead.on('data', (data) => {
+              // if (file === 'style.css') {
+              //   console.log('111', data);
+              // }
+              fs.promises.appendFile(path.join(projectDist, 'style.css'), data);
+            });
+          }
+        });
+      }
+    );
+    resolve();
+  });
+};
+
 (async () => {
   await createDir(projectDist);
 
@@ -75,4 +111,10 @@ const createFile = async (dirPath, data) => {
     return res.replace(`{{${key}}}`, dataComponents[key]);
   }, templHtml);
   await createFile(indexHTMLPath, templateData);
+
+  const stylesData = await getStylesFile(folderStyles);
+  console.log('style', stylesData);
+  await createFile(bundleStyles, stylesData);
+
+  //copy assets
 })();
