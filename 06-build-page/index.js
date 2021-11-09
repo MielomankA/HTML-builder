@@ -1,14 +1,13 @@
 const fs = require('fs');
 const path = require('path');
-const fsPromises = require('fs/promises');
 
 const projectDist = path.join(__dirname, 'project-dist');
 const templatePath = path.join(__dirname, 'template.html');
 const componentsPath = path.join(__dirname, 'components');
 const indexHTMLPath = path.join(projectDist, 'index.html');
 const folderStyles = path.join(__dirname, 'styles');
-const assetsSrc = path.join(__dirname, 'assets');
-const assetsTerm = path.join(projectDist, 'assets');
+const copyFolderInitial = path.join(__dirname, 'assets');
+const copyFolder = path.join(projectDist, 'assets');
 
 const createDir = async (pathDir) => {
   return new Promise((resolve) => {
@@ -63,8 +62,6 @@ const createFile = async (dirPath, data) => {
   });
 };
 
-const bundleStyles = path.join(projectDist, 'style.css');
-
 const getStylesFile = async (pathDir) => {
   return new Promise((resolve) => {
     fs.readdir(
@@ -95,6 +92,32 @@ const getStylesFile = async (pathDir) => {
   });
 };
 
+const copyDir = async (fromFolder, toFolder) => {
+  return new Promise((resolve) => {
+    fs.mkdir(toFolder, { recursive: true }, (err) => {
+      if (err) throw err;
+    });
+    fs.readdir(fromFolder, { withFileTypes: true }, (err, files) => {
+      if (err) throw err;
+
+      files.forEach((file) => {
+        let fromFolderNew = path.join(fromFolder, file.name);
+        let toFolderNew = path.join(toFolder, file.name);
+        if (!file.isFile()) {
+          copyDir(fromFolderNew, toFolderNew, (err) => {
+            if (err) throw err;
+          });
+        } else {
+          fs.copyFile(fromFolderNew, toFolderNew, (err) => {
+            if (err) throw err;
+          });
+        }
+      });
+    });
+    resolve();
+  });
+};
+
 (async () => {
   await createDir(projectDist);
 
@@ -112,9 +135,9 @@ const getStylesFile = async (pathDir) => {
   }, templHtml);
   await createFile(indexHTMLPath, templateData);
 
-  const stylesData = await getStylesFile(folderStyles);
-  console.log('style', stylesData);
-  await createFile(bundleStyles, stylesData);
+  //merge styles
+  await getStylesFile(folderStyles);
 
   //copy assets
+  await copyDir(copyFolderInitial, copyFolder);
 })();
