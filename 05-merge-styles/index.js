@@ -3,6 +3,16 @@ const path = require('path');
 
 const folderStyles = path.join(__dirname, 'styles');
 const projectDist = path.join(__dirname, 'project-dist');
+const bundleCSS = path.join(projectDist, 'bundle.css');
+
+const createFile = async (dirPath, data) => {
+  return new Promise((resolve) => {
+    fs.writeFile(dirPath, data, (err) => {
+      if (err) throw err;
+    });
+    resolve();
+  });
+};
 
 const getStylesFile = async (pathDir) => {
   return new Promise((resolve) => {
@@ -38,5 +48,6 @@ const getStylesFile = async (pathDir) => {
 };
 
 (async () => {
+  await createFile(bundleCSS, '');
   await getStylesFile(folderStyles);
 })();
