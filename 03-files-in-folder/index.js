@@ -13,7 +13,7 @@ function showFiles(folder) {
       if (err) console.log(err);
 
       files.forEach((file) => {
-        if (file.isDirectory() === false) {
+        if (!file.isDirectory()) {
           fs.stat(path.join(folder, file.name), (err, stat) => {
             const kbSize = stat.size / 2 ** 10;
             const nameFile = file.name.split('.');
@@ -22,8 +22,6 @@ function showFiles(folder) {
 
             console.log(`${nameFile[0]} - ${nameFile[1]} - ${kbSize} kb`);
           });
-        } else {
-          showFiles(path.join(folder, file.name));
         }
       });
     }
