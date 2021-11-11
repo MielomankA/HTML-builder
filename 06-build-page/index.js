@@ -119,6 +119,11 @@ const copyDir = async (fromFolder, toFolder) => {
 };
 
 (async () => {
+  await fs.promises.rm(projectDist, {
+    recursive: true,
+    force: true,
+  });
+
   await createDir(projectDist);
 
   const templHtml = await getHTML(templatePath);
